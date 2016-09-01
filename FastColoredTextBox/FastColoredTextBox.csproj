@@ -60,12 +60,6 @@
       <DependentUpon>GoToForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Hints.cs" />
-    <Compile Include="HotkeysEditorForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="HotkeysEditorForm.Designer.cs">
-      <DependentUpon>HotkeysEditorForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="LinesAccessor.cs" />
     <Compile Include="PlatformType.cs" />
     <Compile Include="Hotkeys.cs" />
@@ -117,9 +111,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GoToForm.resx">
       <DependentUpon>GoToForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="HotkeysEditorForm.resx">
-      <DependentUpon>HotkeysEditorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ReplaceForm.resx">
       <DependentUpon>ReplaceForm.cs</DependentUpon>
