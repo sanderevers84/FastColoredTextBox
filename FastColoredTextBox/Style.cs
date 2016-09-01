@@ -161,34 +161,6 @@ namespace FastColoredTextBoxNS
             }
         }
 
-        public override string GetCSS()
-        {
-            string result = "";
-
-            if (BackgroundBrush is SolidBrush)
-            {
-                var s =  ExportToHTML.GetColorAsString((BackgroundBrush as SolidBrush).Color);
-                if (s != "")
-                    result += "background-color:" + s + ";";
-            }
-            if (ForeBrush is SolidBrush)
-            {
-                var s = ExportToHTML.GetColorAsString((ForeBrush as SolidBrush).Color);
-                if (s != "")
-                    result += "color:" + s + ";";
-            }
-            if ((FontStyle & FontStyle.Bold) != 0)
-                result += "font-weight:bold;";
-            if ((FontStyle & FontStyle.Italic) != 0)
-                result += "font-style:oblique;";
-            if ((FontStyle & FontStyle.Strikeout) != 0)
-                result += "text-decoration:line-through;";
-            if ((FontStyle & FontStyle.Underline) != 0)
-                result += "text-decoration:underline;";
-
-            return result;
-        }
-
         public override RTFStyleDescriptor GetRTF()
         {
             var result = new RTFStyleDescriptor();
@@ -319,20 +291,6 @@ namespace FastColoredTextBoxNS
                     return;
                 gr.FillRectangle(BackgroundBrush, rect);
             }
-        }
-
-        public override string GetCSS()
-        {
-            string result = "";
-
-            if (BackgroundBrush is SolidBrush)
-            {
-                var s = ExportToHTML.GetColorAsString((BackgroundBrush as SolidBrush).Color);
-                if (s != "")
-                    result += "background-color:" + s + ";";
-            }
-
-            return result;
         }
     }
 

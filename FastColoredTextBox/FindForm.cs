@@ -125,5 +125,10 @@ namespace FastColoredTextBoxNS
         {
             ResetSerach();
         }
+
+        private void FindForm_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

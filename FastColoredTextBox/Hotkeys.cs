@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.Drawing;
 using System.Drawing.Design;
 using System.Globalization;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -38,10 +34,7 @@ namespace FastColoredTextBoxNS
             this[KEYS.Shift | KEYS.Control | KEYS.U] = FCTBAction.LowerCase;
             this[KEYS.Control | KEYS.OemMinus] = FCTBAction.NavigateBackward;
             this[KEYS.Control | KEYS.Shift | KEYS.OemMinus] = FCTBAction.NavigateForward;
-            this[KEYS.Control | KEYS.B] = FCTBAction.BookmarkLine;
             this[KEYS.Control | KEYS.Shift | KEYS.B] = FCTBAction.UnbookmarkLine;
-            this[KEYS.Control | KEYS.N] = FCTBAction.GoNextBookmark;
-            this[KEYS.Control | KEYS.Shift | KEYS.N] = FCTBAction.GoPrevBookmark;
             this[KEYS.Alt | KEYS.Back] = FCTBAction.Undo;
             this[KEYS.Control | KEYS.Back] = FCTBAction.ClearWordLeft;
             this[KEYS.Insert] = FCTBAction.ReplaceMode;
@@ -83,8 +76,6 @@ namespace FastColoredTextBoxNS
             this[KEYS.Control | KEYS.End] = FCTBAction.GoLastLine;
             this[KEYS.Control | KEYS.Shift | KEYS.End] = FCTBAction.GoLastLineWithSelection;
             this[KEYS.Escape] = FCTBAction.ClearHints;
-            this[KEYS.Control | KEYS.M] = FCTBAction.MacroRecord;
-            this[KEYS.Control | KEYS.E] = FCTBAction.MacroExecute;
             this[KEYS.Control | KEYS.Space] = FCTBAction.AutocompleteMenu;
             this[KEYS.Tab] = FCTBAction.IndentIncrease;
             this[KEYS.Shift | KEYS.Tab] = FCTBAction.IndentDecrease;
@@ -143,7 +134,6 @@ namespace FastColoredTextBoxNS
         None,
         AutocompleteMenu,
         AutoIndentChars,
-        BookmarkLine,
         ClearHints,
         ClearWordLeft,
         ClearWordRight,
@@ -176,8 +166,6 @@ namespace FastColoredTextBoxNS
         GoRightWithSelection,
         GoRight_ColumnSelectionMode,
         GoToDialog,
-        GoNextBookmark,
-        GoPrevBookmark,
         GoUp,
         GoUpWithSelection,
         GoUp_ColumnSelectionMode,
@@ -188,8 +176,6 @@ namespace FastColoredTextBoxNS
         IndentIncrease,
         IndentDecrease,
         LowerCase,
-        MacroExecute,
-        MacroRecord,
         MoveSelectedLinesDown,
         MoveSelectedLinesUp,
         NavigateBackward,

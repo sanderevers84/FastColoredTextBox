@@ -128,6 +128,7 @@
             this.Text = "Find";
             this.TopMost = true;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FindForm_FormClosing);
+            this.Load += new System.EventHandler(this.FindForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
