@@ -18,7 +18,6 @@ namespace FastColoredTextBoxNS
     {
         public virtual void InitDefault()
         {
-            this[KEYS.Control | KEYS.G] = FCTBAction.GoToDialog;
             this[KEYS.Control | KEYS.F] = FCTBAction.FindDialog;
             this[KEYS.Alt | KEYS.F] = FCTBAction.FindChar;
             this[KEYS.F3] = FCTBAction.FindNext;
@@ -165,7 +164,6 @@ namespace FastColoredTextBoxNS
         GoRight,
         GoRightWithSelection,
         GoRight_ColumnSelectionMode,
-        GoToDialog,
         GoUp,
         GoUpWithSelection,
         GoUp_ColumnSelectionMode,

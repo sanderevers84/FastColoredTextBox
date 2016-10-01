@@ -3448,11 +3448,7 @@ namespace FastColoredTextBoxNS
                 case FCTBAction.ScrollUp:
                     DoScrollVertical(1, 1);
                     break;
-
-                case FCTBAction.GoToDialog:
-                    ShowGoToDialog();
-                    break;
-
+                    
                 case FCTBAction.FindChar:
                     findCharMode = true;
                     break;
@@ -7166,22 +7162,14 @@ window.status = ""#print"";
         {
             return LineInfos[iLine].VisibleState;
         }
+        
 
-        /// <summary>
-        /// Shows Goto dialog form
-        /// </summary>
-        public void ShowGoToDialog()
+        public virtual void GoToLine(int selectedLineNumber)
         {
-            var form = new GoToForm();
-            form.TotalLineCount = LinesCount;
-            form.SelectedLineNumber = Selection.Start.iLine + 1;
+            int line = Math.Min(LinesCount - 1, Math.Max(0, selectedLineNumber - 1));
+            Selection = new Range(this, 0, line, 0, line);
+            DoSelectionVisible();
 
-            if (form.ShowDialog() == DialogResult.OK)
-            {
-                int line = Math.Min(LinesCount - 1, Math.Max(0, form.SelectedLineNumber - 1));
-                Selection = new Range(this, 0, line, 0, line);
-                DoSelectionVisible();
-            }
         }
 
         /// <summary>
@@ -7189,8 +7177,7 @@ window.status = ""#print"";
         /// </summary>
         public void OnUndoRedoStateChanged()
         {
-            if (UndoRedoStateChanged != null)
-                UndoRedoStateChanged(this, EventArgs.Empty);
+            UndoRedoStateChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
