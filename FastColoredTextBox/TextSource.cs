@@ -76,8 +76,7 @@ namespace FastColoredTextBoxNS
 
         private void OnCurrentTBChanged()
         {
-            if (CurrentTBChanged != null)
-                CurrentTBChanged(this, EventArgs.Empty);
+            CurrentTBChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -88,7 +87,7 @@ namespace FastColoredTextBoxNS
 
         public TextSource(FastColoredTextBox currentTB)
         {
-            this.CurrentTB = currentTB;
+            CurrentTB = currentTB;
             linesAccessor = new LinesAccessor(this);
             Manager = new CommandManager(this);
 
@@ -133,7 +132,7 @@ namespace FastColoredTextBoxNS
             return lines.GetEnumerator();
         }
 
-        IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
             return (lines  as IEnumerator);
         }
@@ -161,8 +160,7 @@ namespace FastColoredTextBoxNS
 
         public virtual void OnLineInserted(int index, int count)
         {
-            if (LineInserted != null)
-                LineInserted(this, new LineInsertedEventArgs(index, count));
+            LineInserted?.Invoke(this, new LineInsertedEventArgs(index, count));
         }
 
         public virtual void RemoveLine(int index)
@@ -192,14 +190,12 @@ namespace FastColoredTextBoxNS
         public virtual void OnLineRemoved(int index, int count, List<int> removedLineIds)
         {
             if (count > 0)
-                if (LineRemoved != null)
-                    LineRemoved(this, new LineRemovedEventArgs(index, count, removedLineIds));
+                LineRemoved?.Invoke(this, new LineRemovedEventArgs(index, count, removedLineIds));
         }
 
         public virtual void OnTextChanged(int fromLine, int toLine)
         {
-            if (TextChanged != null)
-                TextChanged(this, new TextChangedEventArgs(Math.Min(fromLine, toLine), Math.Max(fromLine, toLine) ));
+            TextChanged?.Invoke(this, new TextChangedEventArgs(Math.Min(fromLine, toLine), Math.Max(fromLine, toLine)));
         }
 
         public class TextChangedEventArgs : EventArgs
@@ -276,14 +272,12 @@ namespace FastColoredTextBoxNS
 
         public virtual void NeedRecalc(TextChangedEventArgs args)
         {
-            if (RecalcNeeded != null)
-                RecalcNeeded(this, args);
+            RecalcNeeded?.Invoke(this, args);
         }
 
         public virtual void OnRecalcWordWrap(TextChangedEventArgs args)
         {
-            if (RecalcWordWrap != null)
-                RecalcWordWrap(this, args);
+            RecalcWordWrap?.Invoke(this, args);
         }
 
         public virtual void OnTextChanging()

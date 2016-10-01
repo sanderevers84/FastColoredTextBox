@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Windows.Forms;
 
 namespace FastColoredTextBoxNS
@@ -87,7 +84,7 @@ namespace FastColoredTextBoxNS
         public StyleVisualMarker(Rectangle rectangle, Style style)
             : base(rectangle)
         {
-            this.Style = style;
+            Style = style;
         }
     }
 
@@ -99,8 +96,8 @@ namespace FastColoredTextBoxNS
         public VisualMarkerEventArgs(Style style, StyleVisualMarker marker, MouseEventArgs args)
             : base(args.Button, args.Clicks, args.X, args.Y, args.Delta)
         {
-            this.Style = style;
-            this.Marker = marker;
+            Style = style;
+            Marker = marker;
         }
     }
 }

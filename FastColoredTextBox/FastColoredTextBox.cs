@@ -263,7 +263,7 @@ namespace FastColoredTextBoxNS
         [DefaultValue(0)]
         [Description("Indent of secondary wordwrap lines (in chars).")]
         public int WordWrapIndent { get; set; }
-        
+
         /// <summary>
         /// Allows drag and drop
         /// </summary>
@@ -884,7 +884,7 @@ namespace FastColoredTextBoxNS
         [DefaultValue(false)]
         [Description("Allows text rendering several styles same time.")]
         public bool AllowSeveralTextStyleDrawing { get; set; }
-        
+
         /// <summary>
         /// Allows AutoIndent. Inserts spaces before new line.
         /// </summary>
@@ -922,24 +922,6 @@ namespace FastColoredTextBoxNS
             get { return timer2.Interval; }
             set { timer2.Interval = value; }
         }
-
-        ///// <summary>
-        ///// Language for highlighting by built-in highlighter.
-        ///// </summary>
-        //[Browsable(true)]
-        //[DefaultValue(typeof (Language), "Custom")]
-        //[Description("Language for highlighting by built-in highlighter.")]
-        //public Language Language
-        //{
-        //    get { return language; }
-        //    set
-        //    {
-        //        language = value;
-        //        if (SyntaxHighlighter != null)
-        //            SyntaxHighlighter.InitStyleSchema(language);
-        //        Invalidate();
-        //    }
-        //}
 
         /// <summary>
         /// Syntax Highlighter
@@ -1249,9 +1231,6 @@ namespace FastColoredTextBoxNS
 
 
         [Browsable(false)]
-        public FindForm findForm { get; private set; }
-
-        [Browsable(false)]
         public ReplaceForm replaceForm { get; private set; }
 
         /// <summary>
@@ -1428,6 +1407,52 @@ namespace FastColoredTextBoxNS
                 baseFont = value;
             }
         }
+
+
+        private bool firstSearch = true;
+        private Place startPlace;
+
+        public virtual void FindNext(string pattern, bool matchCase, bool wholeWord, bool regex)
+        {
+            var opt = matchCase ? RegexOptions.None : RegexOptions.IgnoreCase;
+            if (!regex)
+                pattern = Regex.Escape(pattern);
+            if (wholeWord)
+                pattern = "\\b" + pattern + "\\b";
+            //
+            var range = Selection.Clone();
+            range.Normalize();
+            //
+            if (firstSearch)
+            {
+                startPlace = range.Start;
+                firstSearch = false;
+            }
+            //
+            range.Start = range.End;
+            if (range.Start >= startPlace)
+                range.End = new Place(GetLineLength(LinesCount - 1), LinesCount - 1);
+            else
+                range.End = startPlace;
+            //
+            foreach (var r in range.GetRangesByLines(pattern, opt))
+            {
+                Selection = r;
+                DoSelectionVisible();
+                Invalidate();
+                return;
+            }
+            //
+            if (range.Start >= startPlace && startPlace > Place.Empty)
+            {
+                Selection.Start = new Place(0, 0);
+                FindNext(pattern, matchCase, wholeWord, regex);
+                return;
+            }
+
+            throw new Exception("Not found");
+        }
+
 
         private void SetFont(Font newFont)
         {
@@ -1661,8 +1686,7 @@ namespace FastColoredTextBoxNS
         /// <param name="hint"></param>
         public virtual void OnHintClick(Hint hint)
         {
-            if (HintClick != null)
-                HintClick(this, new HintClickEventArgs(hint));
+            HintClick?.Invoke(this, new HintClickEventArgs(hint));
         }
 
         private void timer3_Tick(object sender, EventArgs e)
@@ -1712,8 +1736,7 @@ namespace FastColoredTextBoxNS
 
             needRiseVisibleRangeChangedDelayed = true;
             ResetTimer(timer);
-            if (VisibleRangeChanged != null)
-                VisibleRangeChanged(this, new EventArgs());
+            VisibleRangeChanged?.Invoke(this, new EventArgs());
         }
 
         /// <summary>
@@ -2273,32 +2296,6 @@ namespace FastColoredTextBoxNS
 
             Styles[i] = style;
             return i;
-        }
-
-        /// <summary>
-        /// Shows find dialog
-        /// </summary>
-        public virtual void ShowFindDialog()
-        {
-            ShowFindDialog(null);
-        }
-
-        /// <summary>
-        /// Shows find dialog
-        /// </summary>
-        public virtual void ShowFindDialog(string findText)
-        {
-            if (findForm == null)
-                findForm = new FindForm(this);
-
-            if (findText != null)
-                findForm.tbFind.Text = findText;
-            else if (!Selection.IsEmpty && Selection.Start.iLine == Selection.End.iLine)
-                findForm.tbFind.Text = Selection.Text;
-
-            findForm.tbFind.SelectAll();
-            findForm.Show();
-            findForm.Focus();
         }
 
         /// <summary>
@@ -3456,19 +3453,8 @@ namespace FastColoredTextBoxNS
                     ShowGoToDialog();
                     break;
 
-                case FCTBAction.FindDialog:
-                    ShowFindDialog();
-                    break;
-
                 case FCTBAction.FindChar:
                     findCharMode = true;
-                    break;
-
-                case FCTBAction.FindNext:
-                    if (findForm == null || findForm.tbFind.Text == "")
-                        ShowFindDialog();
-                    else
-                        findForm.FindNext(findForm.tbFind.Text);
                     break;
 
                 case FCTBAction.ReplaceDialog:
@@ -3819,7 +3805,7 @@ namespace FastColoredTextBoxNS
         {
             Zoom = 100;
         }
-        
+
         /// <summary>
         /// Moves selected lines down
         /// </summary>
@@ -4023,7 +4009,7 @@ namespace FastColoredTextBoxNS
         {
             if (handledChar)
                 return true;
-            
+
             /*  !!!!
             if (c == ' ')
                 return true;*/
@@ -4873,7 +4859,7 @@ namespace FastColoredTextBoxNS
             if (!Enabled)
                 using (var brush = new SolidBrush(DisabledColor))
                     e.Graphics.FillRectangle(brush, ClientRectangle);
-            
+
             if (middleClickScrollingActivated)
                 DrawMiddleClickScrolling(e.Graphics);
 
@@ -6944,7 +6930,7 @@ namespace FastColoredTextBoxNS
             Name = "FastColoredTextBox";
             ResumeLayout(false);
         }
-        
+
 
         protected virtual string PrepareHtmlText(string s)
         {
@@ -6981,7 +6967,7 @@ namespace FastColoredTextBoxNS
                 }
             }
         }
-        
+
         private string SelectHTMLRangeScript()
         {
             Range sel = Selection.Clone();
@@ -7023,17 +7009,9 @@ window.status = ""#print"";
                 timer2.Dispose();
                 middleClickScrollingTimer.Dispose();
 
-                if (findForm != null)
-                    findForm.Dispose();
 
                 if (replaceForm != null)
                     replaceForm.Dispose();
-                /*
-                if (Font != null)
-                    Font.Dispose();
-
-                if (originalFont != null)
-                    originalFont.Dispose();*/
 
                 if (TextSource != null)
                     TextSource.Dispose();
