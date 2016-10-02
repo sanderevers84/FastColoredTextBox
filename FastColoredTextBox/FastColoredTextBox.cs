@@ -191,6 +191,7 @@ namespace FastColoredTextBoxNS
             ToolTip = new ToolTip();
             timer3.Interval = 500;
             SyntaxHighlighter = new SyntaxHighlighter();
+            SyntaxHighlighter.InitStyleSchema();
             SelectionHighlightingForLineBreaksEnabled = true;
             textAreaBorder = TextAreaBorderType.None;
             textAreaBorderColor = Color.Black;
@@ -6711,8 +6712,7 @@ namespace FastColoredTextBoxNS
 
             if (SyntaxHighlighter != null)
             {
-                SyntaxHighlighter.SQLSyntaxHighlight(range);
-            //    SyntaxHighlighter.HighlightSyntax(DescriptionFile, range);
+                SyntaxHighlighter.HighlightSyntax(range);
             }
 
 #if debug

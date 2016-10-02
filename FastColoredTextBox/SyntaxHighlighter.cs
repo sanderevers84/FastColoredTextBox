@@ -81,58 +81,7 @@ namespace FastColoredTextBoxNS
             var tb = sender as FastColoredTextBox;
             tb.CalcAutoIndentShiftByCodeFolding(sender, args);
         }
-
-        public static SyntaxDescriptor ParseXmlDescription(XmlDocument doc)
-        {
-            var desc = new SyntaxDescriptor();
-            XmlNode brackets = doc.SelectSingleNode("doc/brackets");
-            if (brackets != null)
-            {
-                if (brackets.Attributes["left"] == null || brackets.Attributes["right"] == null ||
-                    brackets.Attributes["left"].Value == "" || brackets.Attributes["right"].Value == "")
-                {
-                    desc.leftBracket = '\x0';
-                    desc.rightBracket = '\x0';
-                }
-                else
-                {
-                    desc.leftBracket = brackets.Attributes["left"].Value[0];
-                    desc.rightBracket = brackets.Attributes["right"].Value[0];
-                }
-
-                if (brackets.Attributes["left2"] == null || brackets.Attributes["right2"] == null ||
-                    brackets.Attributes["left2"].Value == "" || brackets.Attributes["right2"].Value == "")
-                {
-                    desc.leftBracket2 = '\x0';
-                    desc.rightBracket2 = '\x0';
-                }
-                else
-                {
-                    desc.leftBracket2 = brackets.Attributes["left2"].Value[0];
-                    desc.rightBracket2 = brackets.Attributes["right2"].Value[0];
-                }
-
-                if (brackets.Attributes["strategy"] == null || brackets.Attributes["strategy"].Value == "")
-                    desc.bracketsHighlightStrategy = BracketsHighlightStrategy.Strategy2;
-                else
-                    desc.bracketsHighlightStrategy = (BracketsHighlightStrategy)Enum.Parse(typeof(BracketsHighlightStrategy), brackets.Attributes["strategy"].Value);
-            }
-
-            var styleByName = new Dictionary<string, Style>();
-
-            foreach (XmlNode style in doc.SelectNodes("doc/style"))
-            {
-                Style s = ParseStyle(style);
-                styleByName[style.Attributes["name"].Value] = s;
-                desc.styles.Add(s);
-            }
-            foreach (XmlNode rule in doc.SelectNodes("doc/rule"))
-                desc.rules.Add(ParseRule(rule, styleByName));
-            foreach (XmlNode folding in doc.SelectNodes("doc/folding"))
-                desc.foldings.Add(ParseFolding(folding));
-
-            return desc;
-        }
+        
 
         protected static FoldingDesc ParseFolding(XmlNode foldingNode)
         {
