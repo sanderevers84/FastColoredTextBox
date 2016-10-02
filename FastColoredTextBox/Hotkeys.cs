@@ -33,7 +33,6 @@ namespace FastColoredTextBoxNS
             this[KEYS.Shift | KEYS.Control | KEYS.U] = FCTBAction.LowerCase;
             this[KEYS.Control | KEYS.OemMinus] = FCTBAction.NavigateBackward;
             this[KEYS.Control | KEYS.Shift | KEYS.OemMinus] = FCTBAction.NavigateForward;
-            this[KEYS.Control | KEYS.Shift | KEYS.B] = FCTBAction.UnbookmarkLine;
             this[KEYS.Alt | KEYS.Back] = FCTBAction.Undo;
             this[KEYS.Control | KEYS.Back] = FCTBAction.ClearWordLeft;
             this[KEYS.Insert] = FCTBAction.ReplaceMode;
@@ -74,7 +73,6 @@ namespace FastColoredTextBoxNS
             this[KEYS.Shift | KEYS.End] = FCTBAction.GoEndWithSelection;
             this[KEYS.Control | KEYS.End] = FCTBAction.GoLastLine;
             this[KEYS.Control | KEYS.Shift | KEYS.End] = FCTBAction.GoLastLineWithSelection;
-            this[KEYS.Escape] = FCTBAction.ClearHints;
             this[KEYS.Control | KEYS.Space] = FCTBAction.AutocompleteMenu;
             this[KEYS.Tab] = FCTBAction.IndentIncrease;
             this[KEYS.Shift | KEYS.Tab] = FCTBAction.IndentDecrease;

@@ -53,7 +53,6 @@
     </Compile>
     <Compile Include="EncodingDetector.cs" />
     <Compile Include="ExportToRTF.cs" />
-    <Compile Include="Hints.cs" />
     <Compile Include="LinesAccessor.cs" />
     <Compile Include="PlatformType.cs" />
     <Compile Include="Hotkeys.cs" />
@@ -85,9 +84,6 @@
     <Compile Include="TextSource.cs" />
     <Compile Include="TypeDescriptor.cs" />
     <Compile Include="FileTextSource.cs" />
-    <Compile Include="UnfocusablePanel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="VisualMarker.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -75,7 +75,6 @@ namespace FastColoredTextBoxNS
         protected Dictionary<int, int> foldingPairs = new Dictionary<int, int>();
         private bool handledChar;
         private bool highlightFoldingIndicator;
-        private Hints hints;
         private Color indentBackColor;
         private bool isChanged;
         private bool isLineSelect;
@@ -191,7 +190,7 @@ namespace FastColoredTextBoxNS
             BookmarkColor = Color.PowderBlue;
             ToolTip = new ToolTip();
             timer3.Interval = 500;
-            hints = new Hints(this);
+            SyntaxHighlighter = new SyntaxHighlighter();
             SelectionHighlightingForLineBreaksEnabled = true;
             textAreaBorder = TextAreaBorderType.None;
             textAreaBorderColor = Color.Black;
@@ -274,20 +273,7 @@ namespace FastColoredTextBoxNS
             get { return base.AllowDrop; }
             set { base.AllowDrop = value; }
         }
-
-        /// <summary>
-        /// Collection of Hints.
-        /// This is temporary buffer for currently displayed hints.
-        /// </summary>
-        /// <remarks>You can asynchronously add, remove and clear hints. Appropriate hints will be shown or hidden from the screen.</remarks>
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
-         EditorBrowsable(EditorBrowsableState.Never)]
-        public Hints Hints
-        {
-            get { return hints; }
-            set { hints = value; }
-        }
-
+        
         /// <summary>
         /// Delay (ms) of ToolTip
         /// </summary>
@@ -929,26 +915,7 @@ namespace FastColoredTextBoxNS
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public SyntaxHighlighter SyntaxHighlighter { get; set; }
-
-        /// <summary>
-        /// XML file with description of syntax highlighting.
-        /// This property works only with Language == Language.Custom.
-        /// </summary>
-        [Browsable(true)]
-        [DefaultValue(null)]
-        [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
-        [Description(
-            "XML file with description of syntax highlighting. This property works only with Language == Language.Custom."
-            )]
-        public string DescriptionFile
-        {
-            get { return descriptionFile; }
-            set
-            {
-                descriptionFile = value;
-                Invalidate();
-            }
-        }
+        
 
         /// <summary>
         /// Position of left highlighted bracket.
@@ -1614,81 +1581,7 @@ namespace FastColoredTextBoxNS
         [Browsable(true)]
         [Description("Occurs when mouse is moving over text and tooltip is needed.")]
         public event EventHandler<ToolTipNeededEventArgs> ToolTipNeeded;
-
-        /// <summary>
-        /// Removes all hints
-        /// </summary>
-        public void ClearHints()
-        {
-            if (Hints != null)
-                Hints.Clear();
-        }
-
-        /// <summary>
-        /// Add and shows the hint
-        /// </summary>
-        /// <param name="range">Linked range</param>
-        /// <param name="innerControl">Inner control</param>
-        /// <param name="scrollToHint">Scrolls textbox to the hint</param>
-        /// <param name="inline">Inlining. If True then hint will moves apart text</param>
-        /// <param name="dock">Docking. If True then hint will fill whole line</param>
-        public virtual Hint AddHint(Range range, Control innerControl, bool scrollToHint, bool inline, bool dock)
-        {
-            var hint = new Hint(range, innerControl, inline, dock);
-            Hints.Add(hint);
-            if (scrollToHint)
-                hint.DoVisible();
-
-            return hint;
-        }
-
-        /// <summary>
-        /// Add and shows the hint
-        /// </summary>
-        /// <param name="range">Linked range</param>
-        /// <param name="innerControl">Inner control</param>
-        public Hint AddHint(Range range, Control innerControl)
-        {
-            return AddHint(range, innerControl, true, true, true);
-        }
-
-        /// <summary>
-        /// Add and shows simple text hint
-        /// </summary>
-        /// <param name="range">Linked range</param>
-        /// <param name="text">Text of simple hint</param>
-        /// <param name="scrollToHint">Scrolls textbox to the hint</param>
-        /// <param name="inline">Inlining. If True then hint will moves apart text</param>
-        /// <param name="dock">Docking. If True then hint will fill whole line</param>
-        public virtual Hint AddHint(Range range, string text, bool scrollToHint, bool inline, bool dock)
-        {
-            var hint = new Hint(range, text, inline, dock);
-            Hints.Add(hint);
-            if (scrollToHint)
-                hint.DoVisible();
-
-            return hint;
-        }
-
-        /// <summary>
-        /// Add and shows simple text hint
-        /// </summary>
-        /// <param name="range">Linked range</param>
-        /// <param name="text">Text of simple hint</param>
-        public Hint AddHint(Range range, string text)
-        {
-            return AddHint(range, text, true, true, true);
-        }
-
-        /// <summary>
-        /// Occurs when user click on the hint
-        /// </summary>
-        /// <param name="hint"></param>
-        public virtual void OnHintClick(Hint hint)
-        {
-            HintClick?.Invoke(this, new HintClickEventArgs(hint));
-        }
-
+                
         private void timer3_Tick(object sender, EventArgs e)
         {
             timer3.Stop();
@@ -1757,14 +1650,6 @@ namespace FastColoredTextBoxNS
             VerticalScroll.LargeChange = 10 * charHeight;
             HorizontalScroll.SmallChange = CharWidth;
         }
-
-        /// <summary>
-        /// HintClick event.
-        /// It occurs if user click on the hint.
-        /// </summary>
-        [Browsable(true)]
-        [Description("It occurs if user click on the hint.")]
-        public event EventHandler<HintClickEventArgs> HintClick;
 
         /// <summary>
         /// TextChanged event.
@@ -1989,7 +1874,6 @@ namespace FastColoredTextBoxNS
             }
 
             LineInfos.Clear();
-            ClearHints();
 
             lines = ts;
 
@@ -2771,42 +2655,8 @@ namespace FastColoredTextBoxNS
                 }
         }
 
-        List<Control> tempHintsList = new List<Control>();
-
-        void HideHints()
-        {
-            //temporarly remove hints
-            if (!ShowScrollBars && Hints.Count > 0)
-            {
-                (this as Control).SuspendLayout();
-
-                foreach (Control c in Controls)
-                    tempHintsList.Add(c);
-
-                Controls.Clear();
-            }
-        }
-
-        void RestoreHints()
-        {
-            //restore hints
-            if (!ShowScrollBars && Hints.Count > 0)
-            {
-                foreach (var c in tempHintsList)
-                    Controls.Add(c);
-
-                tempHintsList.Clear();
-
-                (this as Control).ResumeLayout(false);
-
-                if (!Focused)
-                    Focus();
-            }
-        }
-
         public void OnScroll(ScrollEventArgs se, bool alignByLines)
         {
-            HideHints();
 
             if (se.ScrollOrientation == ScrollOrientation.VerticalScroll)
             {
@@ -2821,8 +2671,6 @@ namespace FastColoredTextBoxNS
                 HorizontalScroll.Value = Math.Max(HorizontalScroll.Minimum, Math.Min(HorizontalScroll.Maximum, se.NewValue));
 
             UpdateScrollbars();
-
-            RestoreHints();
 
             Invalidate();
             //
@@ -3174,7 +3022,6 @@ namespace FastColoredTextBoxNS
         /// <param name="rect"></param>
         internal void DoVisibleRectangle(Rectangle rect)
         {
-            HideHints();
 
             int oldV = VerticalScroll.Value;
             int v = VerticalScroll.Value;
@@ -3209,8 +3056,6 @@ namespace FastColoredTextBoxNS
             }
 
             UpdateScrollbars();
-            //
-            RestoreHints();
             //
             if (oldV != VerticalScroll.Value)
                 OnVisibleRangeChanged();
@@ -4812,8 +4657,6 @@ namespace FastColoredTextBoxNS
                     using (var indicatorPen = new Pen(Color.FromArgb(100, FoldingIndicatorColor), 4))
                         e.Graphics.DrawLine(indicatorPen, LeftIndent - 5, startFoldingY, LeftIndent - 5, endFoldingY);
                 }
-            //draw hint's brackets
-            PaintHintBrackets(e.Graphics);
             //draw markers
             DrawMarkers(e, servicePen);
             //draw caret
@@ -4950,49 +4793,7 @@ namespace FastColoredTextBoxNS
             using (Pen pen = new Pen(TextAreaBorderColor))
                 graphics.DrawRectangle(pen, rect);
         }
-
-        private void PaintHintBrackets(Graphics gr)
-        {
-            foreach (Hint hint in hints)
-            {
-                Range r = hint.Range.Clone();
-                r.Normalize();
-                Point p1 = PlaceToPoint(r.Start);
-                Point p2 = PlaceToPoint(r.End);
-                if (GetVisibleState(r.Start.iLine) != VisibleState.Visible ||
-                    GetVisibleState(r.End.iLine) != VisibleState.Visible)
-                    continue;
-
-                using (var pen = new Pen(hint.BorderColor))
-                {
-                    pen.DashStyle = DashStyle.Dash;
-                    if (r.IsEmpty)
-                    {
-                        p1.Offset(1, -1);
-                        gr.DrawLines(pen, new[] { p1, new Point(p1.X, p1.Y + charHeight + 2) });
-                    }
-                    else
-                    {
-                        p1.Offset(-1, -1);
-                        p2.Offset(1, -1);
-                        gr.DrawLines(pen,
-                                     new[]
-                                         {
-                                             new Point(p1.X + CharWidth/2, p1.Y), p1,
-                                             new Point(p1.X, p1.Y + charHeight + 2),
-                                             new Point(p1.X + CharWidth/2, p1.Y + charHeight + 2)
-                                         });
-                        gr.DrawLines(pen,
-                                     new[]
-                                         {
-                                             new Point(p2.X - CharWidth/2, p2.Y), p2,
-                                             new Point(p2.X, p2.Y + charHeight + 2),
-                                             new Point(p2.X - CharWidth/2, p2.Y + charHeight + 2)
-                                         });
-                    }
-                }
-            }
-        }
+        
 
         protected virtual void DrawFoldingLines(PaintEventArgs e, int startLine, int endLine)
         {
@@ -5713,7 +5514,6 @@ namespace FastColoredTextBoxNS
             var sw = Stopwatch.StartNew();
 #endif
             CancelToolTip();
-            ClearHints();
             IsChanged = true;
             TextVersion++;
             MarkLinesAsChanged(args.ChangedRange);
@@ -6907,9 +6707,12 @@ namespace FastColoredTextBoxNS
                     break;
             }
 
+
+
             if (SyntaxHighlighter != null)
             {
-                SyntaxHighlighter.HighlightSyntax(DescriptionFile, range);
+                SyntaxHighlighter.SQLSyntaxHighlight(range);
+            //    SyntaxHighlighter.HighlightSyntax(DescriptionFile, range);
             }
 
 #if debug
@@ -8047,20 +7850,7 @@ window.status = ""#print"";
         public string ToolTipText { get; set; }
         public ToolTipIcon ToolTipIcon { get; set; }
     }
-
-    /// <summary>
-    /// HintClick event args
-    /// </summary>
-    public class HintClickEventArgs : EventArgs
-    {
-        public HintClickEventArgs(Hint hint)
-        {
-            Hint = hint;
-        }
-
-        public Hint Hint { get; private set; }
-    }
-
+    
     /// <summary>
     /// CustomAction event args
     /// </summary>
