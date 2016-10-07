@@ -21,6 +21,7 @@
 //
 // #define Styles32
 
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -34,8 +35,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
-using System.Windows.Forms.Design;
-using Microsoft.Win32;
 using Timer = System.Windows.Forms.Timer;
 
 namespace FastColoredTextBoxNS
@@ -1197,9 +1196,62 @@ namespace FastColoredTextBoxNS
             }
         }
 
+        public List<Range> FindAll(string pattern, bool matchCase, bool regex, bool wholeWord)
+        {
+            var opt = matchCase ? RegexOptions.None : RegexOptions.IgnoreCase;
+            if (!regex)
+                pattern = Regex.Escape(pattern);
+            if (wholeWord)
+                pattern = "\\b" + pattern + "\\b";
+            //
+            var range = Selection.IsEmpty ? Range.Clone() : Selection.Clone();
+            //
+            var list = new List<Range>();
+            foreach (var r in range.GetRangesByLines(pattern, opt))
+                list.Add(r);
 
-        [Browsable(false)]
-        public ReplaceForm replaceForm { get; private set; }
+            return list;
+        }
+
+        public bool Find(string pattern, bool matchCase, bool regex, bool wholeWord)
+        {
+            RegexOptions opt = matchCase ? RegexOptions.None : RegexOptions.IgnoreCase;
+            if (!regex)
+                pattern = Regex.Escape(pattern);
+            if (wholeWord)
+                pattern = "\\b" + pattern + "\\b";
+            //
+            Range range = Selection.Clone();
+            range.Normalize();
+            //
+            if (firstSearch)
+            {
+                startPlace = range.Start;
+                firstSearch = false;
+            }
+            //
+            range.Start = range.End;
+            if (range.Start >= startPlace)
+                range.End = new Place(GetLineLength(LinesCount - 1), LinesCount - 1);
+            else
+                range.End = startPlace;
+            //
+            foreach (var r in range.GetRangesByLines(pattern, opt))
+            {
+                Selection.Start = r.Start;
+                Selection.End = r.End;
+                DoSelectionVisible();
+                Invalidate();
+                return true;
+            }
+            if (range.Start >= startPlace && startPlace > Place.Empty)
+            {
+                Selection.Start = new Place(0, 0);
+                return Find(pattern, matchCase, regex, wholeWord);
+            }
+            return false;
+        }
+
 
         /// <summary>
         /// Do not change this property
@@ -2182,35 +2234,7 @@ namespace FastColoredTextBoxNS
             Styles[i] = style;
             return i;
         }
-
-        /// <summary>
-        /// Shows replace dialog
-        /// </summary>
-        public virtual void ShowReplaceDialog()
-        {
-            ShowReplaceDialog(null);
-        }
-
-        /// <summary>
-        /// Shows replace dialog
-        /// </summary>
-        public virtual void ShowReplaceDialog(string findText)
-        {
-            if (ReadOnly)
-                return;
-            if (replaceForm == null)
-                replaceForm = new ReplaceForm(this);
-
-            if (findText != null)
-                replaceForm.tbFind.Text = findText;
-            else if (!Selection.IsEmpty && Selection.Start.iLine == Selection.End.iLine)
-                replaceForm.tbFind.Text = Selection.Text;
-
-            replaceForm.tbFind.SelectAll();
-            replaceForm.Show();
-            replaceForm.Focus();
-        }
-
+        
         /// <summary>
         /// Gets length of given line
         /// </summary>
@@ -2285,41 +2309,7 @@ namespace FastColoredTextBoxNS
                 //occurs if some other process holds open clipboard
             }
         }
-
-        public static MemoryStream PrepareHtmlForClipboard(string html)
-        {
-            Encoding enc = Encoding.UTF8;
-
-            string begin = "Version:0.9\r\nStartHTML:{0:000000}\r\nEndHTML:{1:000000}"
-                           + "\r\nStartFragment:{2:000000}\r\nEndFragment:{3:000000}\r\n";
-
-            string html_begin = "<html>\r\n<head>\r\n"
-                                + "<meta http-equiv=\"Content-Type\""
-                                + " content=\"text/html; charset=" + enc.WebName + "\">\r\n"
-                                + "<title>HTML clipboard</title>\r\n</head>\r\n<body>\r\n"
-                                + "<!--StartFragment-->";
-
-            string html_end = "<!--EndFragment-->\r\n</body>\r\n</html>\r\n";
-
-            string begin_sample = String.Format(begin, 0, 0, 0, 0);
-
-            int count_begin = enc.GetByteCount(begin_sample);
-            int count_html_begin = enc.GetByteCount(html_begin);
-            int count_html = enc.GetByteCount(html);
-            int count_html_end = enc.GetByteCount(html_end);
-
-            string html_total = String.Format(
-                begin
-                , count_begin
-                , count_begin + count_html_begin + count_html + count_html_end
-                , count_begin + count_html_begin
-                , count_begin + count_html_begin + count_html
-                                    ) + html_begin + html + html_end;
-
-            return new MemoryStream(enc.GetBytes(html_total));
-        }
-
-
+        
         /// <summary>
         /// Cut selected text into Clipboard
         /// </summary>
@@ -2754,11 +2744,7 @@ namespace FastColoredTextBoxNS
         {
             if (!needRecalc)
                 return;
-
-#if debug
-            var sw = Stopwatch.StartNew();
-#endif
-
+            
             needRecalc = false;
             //calc min left indent
             LeftIndent = LeftPadding;
@@ -2795,10 +2781,7 @@ namespace FastColoredTextBoxNS
 
             AutoScrollMinSize = new Size(minWidth, TextHeight + Paddings.Top + Paddings.Bottom);
             UpdateScrollbars();
-#if debug
-            sw.Stop();
-            Console.WriteLine("Recalc: " + sw.ElapsedMilliseconds);
-#endif
+
         }
 
         private void CalcMinAutosizeWidth(out int minWidth, ref int maxLineLength)
@@ -3082,8 +3065,7 @@ namespace FastColoredTextBoxNS
 
         protected virtual void OnScrollbarsUpdated()
         {
-            if (ScrollbarsUpdated != null)
-                ScrollbarsUpdated(this, EventArgs.Empty);
+            ScrollbarsUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -3298,11 +3280,7 @@ namespace FastColoredTextBoxNS
                 case FCTBAction.FindChar:
                     findCharMode = true;
                     break;
-
-                case FCTBAction.ReplaceDialog:
-                    ShowReplaceDialog();
-                    break;
-
+                    
                 case FCTBAction.Copy:
                     Copy();
                     break;
@@ -3799,8 +3777,7 @@ namespace FastColoredTextBoxNS
 
         public void OnKeyPressing(KeyPressEventArgs args)
         {
-            if (KeyPressing != null)
-                KeyPressing(this, args);
+            KeyPressing?.Invoke(this, args);
         }
 
         private bool OnKeyPressing(char c)
@@ -4320,23 +4297,7 @@ namespace FastColoredTextBoxNS
 
             return result;
         }
-
-        protected int GetMaxStartSpacesCount(int fromLine, int toLine)
-        {
-            if (fromLine > toLine)
-                return 0;
-
-            int result = 0;
-            for (int i = fromLine; i <= toLine; i++)
-            {
-                int count = lines[i].StartSpacesCount;
-                if (count > result)
-                    result = count;
-            }
-
-            return result;
-        }
-
+        
         /// <summary>
         /// Undo last operation
         /// </summary>
@@ -4401,10 +4362,7 @@ namespace FastColoredTextBoxNS
 
         [DllImport("User32.dll")]
         private static extern bool SetCaretPos(int x, int y);
-
-        [DllImport("User32.dll")]
-        private static extern bool DestroyCaret();
-
+        
         [DllImport("User32.dll")]
         private static extern bool ShowCaret(IntPtr hWnd);
 
@@ -4739,36 +4697,7 @@ namespace FastColoredTextBoxNS
         }
 
         private Rectangle prevCaretRect;
-
-        private void DrawRecordingHint(Graphics graphics)
-        {
-            const int w = 75;
-            const int h = 13;
-            var rect = new Rectangle(ClientRectangle.Right - w, ClientRectangle.Bottom - h, w, h);
-            var iconRect = new Rectangle(-h / 2 + 3, -h / 2 + 3, h - 7, h - 7);
-            var state = graphics.Save();
-            graphics.SmoothingMode = SmoothingMode.HighQuality;
-            graphics.TranslateTransform(rect.Left + h / 2, rect.Top + h / 2);
-            var ts = new TimeSpan(DateTime.Now.Ticks);
-            graphics.RotateTransform(180 * (DateTime.Now.Millisecond / 1000f));
-            using (var pen = new Pen(Color.Red, 2))
-            {
-                graphics.DrawArc(pen, iconRect, 0, 90);
-                graphics.DrawArc(pen, iconRect, 180, 90);
-            }
-            graphics.DrawEllipse(Pens.Red, iconRect);
-            graphics.Restore(state);
-            using (var font = new Font(FontFamily.GenericSansSerif, 8f))
-                graphics.DrawString("Recording...", font, Brushes.Red, new PointF(rect.Left + h, rect.Top));
-            System.Threading.Timer tm = null;
-            tm = new System.Threading.Timer(
-                (o) =>
-                {
-                    Invalidate(rect);
-                    tm.Dispose();
-                }, null, 200, System.Threading.Timeout.Infinite);
-        }
-
+        
         private void DrawTextAreaBorder(Graphics graphics)
         {
             if (TextAreaBorder == TextAreaBorderType.None)
@@ -4923,7 +4852,7 @@ namespace FastColoredTextBoxNS
             base.OnMouseUp(e);
             isLineSelect = false;
 
-            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            if (e.Button == MouseButtons.Left)
             {
                 if (mouseIsDragDrop)
                     OnMouseClickText(e);
@@ -4938,7 +4867,7 @@ namespace FastColoredTextBoxNS
             {
                 DeactivateMiddleClickScrollingMode();
                 mouseIsDrag = false;
-                if (e.Button == System.Windows.Forms.MouseButtons.Middle)
+                if (e.Button == MouseButtons.Middle)
                     RestoreScrollsAfterMiddleClickScrollingMode();
                 return;
             }
@@ -5636,8 +5565,7 @@ namespace FastColoredTextBoxNS
 
         protected virtual void OnFoldingHighlightChanged()
         {
-            if (FoldingHighlightChanged != null)
-                FoldingHighlightChanged(this, EventArgs.Empty);
+            FoldingHighlightChanged?.Invoke(this, EventArgs.Empty);
         }
 
         protected override void OnGotFocus(EventArgs e)
@@ -6808,10 +6736,6 @@ window.status = ""#print"";
                 timer2.Dispose();
                 middleClickScrollingTimer.Dispose();
 
-
-                if (replaceForm != null)
-                    replaceForm.Dispose();
-
                 if (TextSource != null)
                     TextSource.Dispose();
 
@@ -6822,8 +6746,7 @@ window.status = ""#print"";
 
         protected virtual void OnPaintLine(PaintLineEventArgs e)
         {
-            if (PaintLine != null)
-                PaintLine(this, e);
+            PaintLine?.Invoke(this, e);
         }
 
         internal void OnLineInserted(int index)
@@ -6833,15 +6756,13 @@ window.status = ""#print"";
 
         internal void OnLineInserted(int index, int count)
         {
-            if (LineInserted != null)
-                LineInserted(this, new LineInsertedEventArgs(index, count));
+            LineInserted?.Invoke(this, new LineInsertedEventArgs(index, count));
         }
 
         internal void OnLineRemoved(int index, int count, List<int> removedLineIds)
         {
             if (count > 0)
-                if (LineRemoved != null)
-                    LineRemoved(this, new LineRemovedEventArgs(index, count, removedLineIds));
+                LineRemoved?.Invoke(this, new LineRemovedEventArgs(index, count, removedLineIds));
         }
 
         /// <summary>
