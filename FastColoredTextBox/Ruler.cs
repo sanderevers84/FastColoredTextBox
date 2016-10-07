@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Data;
 using System.Drawing.Drawing2D;
-using System.Text;
 using System.Windows.Forms;
 
 namespace FastColoredTextBoxNS
@@ -50,13 +47,10 @@ namespace FastColoredTextBoxNS
             TickColor = Color.DarkGray;
             CaretTickColor = Color.Black;
         }
-
-
-
+        
         protected virtual void OnTargetChanged()
         {
-            if (TargetChanged != null)
-                TargetChanged(this, EventArgs.Empty);
+            TargetChanged?.Invoke(this, EventArgs.Empty);
         }
 
         protected virtual void UnSubscribe(FastColoredTextBox target)

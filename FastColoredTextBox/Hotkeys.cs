@@ -18,10 +18,8 @@ namespace FastColoredTextBoxNS
     {
         public virtual void InitDefault()
         {
-            this[KEYS.Control | KEYS.F] = FCTBAction.FindDialog;
             this[KEYS.Alt | KEYS.F] = FCTBAction.FindChar;
             this[KEYS.F3] = FCTBAction.FindNext;
-            this[KEYS.Control | KEYS.H] = FCTBAction.ReplaceDialog;
             this[KEYS.Control | KEYS.C] = FCTBAction.Copy;
             this[KEYS.Control | KEYS.Shift | KEYS.C] = FCTBAction.CommentSelected;
             this[KEYS.Control | KEYS.X] = FCTBAction.Cut;
@@ -73,7 +71,6 @@ namespace FastColoredTextBoxNS
             this[KEYS.Shift | KEYS.End] = FCTBAction.GoEndWithSelection;
             this[KEYS.Control | KEYS.End] = FCTBAction.GoLastLine;
             this[KEYS.Control | KEYS.Shift | KEYS.End] = FCTBAction.GoLastLineWithSelection;
-            this[KEYS.Control | KEYS.Space] = FCTBAction.AutocompleteMenu;
             this[KEYS.Tab] = FCTBAction.IndentIncrease;
             this[KEYS.Shift | KEYS.Tab] = FCTBAction.IndentDecrease;
             this[KEYS.Control | KEYS.Subtract] = FCTBAction.ZoomOut;
@@ -131,7 +128,6 @@ namespace FastColoredTextBoxNS
         None,
         AutocompleteMenu,
         AutoIndentChars,
-        ClearHints,
         ClearWordLeft,
         ClearWordRight,
         CommentSelected,
@@ -139,7 +135,6 @@ namespace FastColoredTextBoxNS
         Cut,
         DeleteCharRight,
         FindChar,
-        FindDialog,
         FindNext,
         GoDown,
         GoDownWithSelection,
@@ -178,12 +173,10 @@ namespace FastColoredTextBoxNS
         NavigateForward,
         Paste,
         Redo,
-        ReplaceDialog,
         ReplaceMode,
         ScrollDown,
         ScrollUp,
         SelectAll,
-        UnbookmarkLine,
         Undo,
         UpperCase,
         ZoomIn,
