@@ -41,8 +41,7 @@ namespace FastColoredTextBoxNS
         /// </summary>
         public virtual void OnVisualMarkerClick(FastColoredTextBox tb, VisualMarkerEventArgs args)
         {
-            if (VisualMarkerClick != null)
-                VisualMarkerClick(tb, args);
+            VisualMarkerClick?.Invoke(tb, args);
         }
 
         /// <summary>
@@ -74,17 +73,8 @@ namespace FastColoredTextBoxNS
 
         public virtual void Dispose()
         {
-            ;
         }
-
-        /// <summary>
-        /// Returns CSS for export to HTML
-        /// </summary>
-        /// <returns></returns>
-        public virtual string GetCSS()
-        {
-            return "";
-        }
+        
 
         /// <summary>
         /// Returns RTF descriptor for export to RTF

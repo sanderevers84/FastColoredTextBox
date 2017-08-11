@@ -15,6 +15,11 @@
         /// <remarks>Bit 1 in position n means that this char will rendering by FastColoredTextBox.Styles[n]</remarks>
         public StyleIndex style;
 
+
+        /// <summary>
+        /// Construct a new char
+        /// </summary>
+        /// <param name="c"></param>
         public Char(char c)
         {
             this.c = c;
